@@ -85,6 +85,7 @@ NOTES:
 
 * n{x} are wrapped integers
 * There's no REPL yet
+* A prelude is added automatically to ensure basic integer binary operations are supported
 
 
 ## LIMITATIONS
