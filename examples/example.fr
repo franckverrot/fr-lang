@@ -1,0 +1,16 @@
+foo :: Int
+foo = 42 * 2
+
+bar :: Int
+bar = foo
+
+baz :: String
+baz = "test"
+
+add' :: Int -> Int -> Int
+add' a b = a + b
+
+add'1 :: Int -> Int
+add'1 a = add' 1 a
+
+main = add'1 41
