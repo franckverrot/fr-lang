@@ -64,19 +64,19 @@ A debug mode is also supported, who yield sexps (and hence looks very similar to
   []
   (#(add'1[n{41}])))
 
-(defn (#add :: [])
+(defn (#add :: (NumberType, NumberType, NumberType))
   [x, y]
   (<native_rb>))
 
-(defn (#sub :: [])
+(defn (#sub :: (NumberType, NumberType, NumberType))
   [x, y]
   (<native_rb>))
 
-(defn (#mul :: [])
+(defn (#mul :: (NumberType, NumberType, NumberType))
   [x, y]
   (<native_rb>))
 
-(defn (#div :: [])
+(defn (#div :: (NumberType, NumberType, NumberType))
   [x, y]
   (<native_rb>))
 ```

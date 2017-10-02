@@ -20,10 +20,11 @@ module Prelude
         fun_x, fun_y = finder[id_x], finder[id_y]
         x = run_eval(fun_x, programs)
         y = run_eval(fun_y, programs)
-        #binding.pry
         ruby_func[x, y]
-        #NumberType.new(result)
-      end)
+      end).tap do |fd|
+        int = Domain.new(NumberType)
+        fd.domains = Domains.new([int, int, int])
+      end
   end
 
   Add = BinOp["add", ->(x, y) { x + y } ]
