@@ -12,7 +12,9 @@ rule
             | statements nl statement { result = val.flatten.compact }
   statement: typedef { result = val }
            | fun { result = val }
+           | comment { result = val }
 
+  comment: COMMENT
   nl: NEWLINE
 
   fun_name: IDENTIFIER { result = Identifier.new(val.first) }
