@@ -12,13 +12,30 @@ class Domains < Struct.new(:values)
   def to_s
     "(#{values.map(&:to_s).join(', ')})"
   end
+
+  def empty?
+    values.empty?
+  end
+end
+
+class UnknownArgType < Struct.new(:identifier)
+  def to_s
+    "<unknown type>"
+  end
 end
 
 class FunDef
   attr_accessor :identifier, :body, :domains, :args
-  def initialize(identifier, args, body)
+  def initialize(identifier, args, body, domains = Domains.new([]))
     @identifier, @args, @body = identifier, args, body
-    @domains = []
+    @domains = if domains.values.empty?
+                 Domains.new(
+                   args.value.map do |arg|
+                     Domain.new(UnknownArgType.new(arg))
+                   end)
+               else
+                 domains
+               end
   end
 
   def to_s
@@ -106,4 +123,7 @@ class FunCall
   def to_s
     "#(#{identifier.to_s}[#{args.value.map(&:to_s).join(', ')}])"
   end
+end
+
+class UnknownType
 end

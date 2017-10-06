@@ -81,9 +81,6 @@ def run_eval(fun, programs)
 end
 
 
-def run_types(fun, programs)
-end
-
 DOMAINS = {
   "Int" => NumberType,
   "String" => StringType,
@@ -98,11 +95,95 @@ def apply_types(program)
         fun_def.domains = Domains.new td.domains.map { |a| Domain.new DOMAINS.fetch(a) }
       end
   end
-  sts.each do |st|
-    # TODO: type propagation
-    # depth-first search, and then propagate up and laterally
-  end
+
+  entry = sts.find { |fun| fun.identifier.name == ENTRY_POINT && fun.is_a?(FunDef) }
+  run_types(entry, [sts, []])
   sts
+end
+
+def run_types(fun, programs)
+  raise 'No fun' if fun.nil?
+  base, env = programs
+  base = base.flatten
+  env = env.flatten
+
+  case fun
+  when NativeRubyCode
+    fun.domains
+  when NumberType
+    Domains.new(Array(fun.class).map { |c| Domain.new c })
+  when StringType
+    Domains.new(Array(fun.class).map { |c| Domain.new c })
+  when FunDef
+    target = [base, env].flatten.
+      find { |f| f.identifier == fun.identifier }
+
+    # Check existing typing!
+    target.domains = run_types(target.body, [base, env])
+
+    target.domains
+  when FunCall
+    target = [base, env].flatten.
+      find { |f| f.identifier == fun.identifier }
+
+    if target.nil?
+      raise FunctionNotFound, <<-EOS
+Missing function
+
+ERROR: Can't find function \"#{fun.identifier}\" in the environment.
+
+HINT: Available functions: #{base.map(&:identifier).join(', ')}
+
+EOS
+    end
+
+    # Explore arguments
+    actual_args =
+      fun.args.value.
+      map do |arg|
+        run_types(arg, [base,env]).map do |types|
+          if types.nil?
+            Domains.new([])
+          else
+            Domains.new types
+          end
+        end.tap do |domains|
+          if arg.is_a?(Identifier)
+            arg_tgt = [base, env].flatten.
+              find { |f| f.identifier == fun.identifier }
+            arg_tgt.domains = domains
+          end
+        end
+      end.flatten.
+      inject([]) { |a,b| a << b.values }.flatten
+    actual_args = Domains.new actual_args
+
+    types = run_types(target, [base, env])
+
+    applied_types = types.values[0..actual_args.count - 1]
+    applied_types = Domains.new applied_types
+
+    actual_types = types.values[actual_args.count..-1]
+    actual_types = Domains.new actual_types
+
+    target.domains = types
+
+    if (actual_args.values.count > 0) && (actual_args != actual_types)
+      raise TypeMistmatchError, """Type Mismatch!
+
+ERROR: Couldn't resolve proper type for method \"#{fun.identifier}\"
+
+HINT:
+           Got: #{actual_args}
+Expected types: #{actual_types}
+
+"""
+    end
+
+    applied_types
+  else
+    raise UnsupportedType, "#{body.class} called in #{fun}"
+  end
 end
 
 def apply_prelude(program)
@@ -120,6 +201,7 @@ end
 EntryPointNotFound = Class.new RuntimeError
 FunctionNotFound   = Class.new RuntimeError
 UnsupportedType    = Class.new RuntimeError
+TypeMistmatchError = Class.new RuntimeError
 
 parser = Parser.new
 ENTRY_POINT = "main"
