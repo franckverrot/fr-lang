@@ -122,24 +122,24 @@ FunctionNotFound   = Class.new RuntimeError
 UnsupportedType    = Class.new RuntimeError
 
 parser = Parser.new
-entry_point = "main"
+ENTRY_POINT = "main"
 
 file = ARGV[0]
 if file
   # parse and type-check
   program = parser.parse(File.read(file).strip)
-  program = apply_types(program)
   program = apply_prelude(program)
+  program = apply_types(program)
 
   if ENV['DEBUG'] # check typing
     puts program.map(&:to_s)
   else # run the program
-    entry = program.find { |fun| fun.identifier.name == entry_point && fun.is_a?(FunDef) }
+    entry = program.find { |fun| fun.identifier.name == ENTRY_POINT && fun.is_a?(FunDef) }
 
     stack = [[program], []]
 
     if entry.nil?
-      raise EntryPointNotFound, "Couldn't find entry point: #{entry_point}"
+      raise EntryPointNotFound, "Couldn't find entry point: #{ENTRY_POINT}"
     end
     puts "\n#{run_eval(entry, stack)}"
   end
