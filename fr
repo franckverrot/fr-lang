@@ -23,8 +23,8 @@ def run_eval(fun, programs)
   body = fun.body
 
   case body
-  when Proc
-    body.call([base,env], fun)
+  when NativeRubyCode
+    body.body.call([base,env], fun)
   when NumberType
     body
   when StringType
