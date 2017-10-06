@@ -49,9 +49,9 @@ class FunBody < Struct.new(:body)
   end
 end
 
-class Proc
+class NativeRubyCode < Struct.new(:name, :body, :domains)
   def to_s
-    "<native_rb>"
+    "#<native(#{name} :: #{domains.to_s}>"
   end
 end
 

@@ -21,7 +21,7 @@ rule
 
   domains: domain {  result = val.flatten }
          | domains ARROW domain {  result = [result, val[2]].flatten }
-         | { binding.pry; result = [] }
+         | { result = [] }
 
   domain: TYPE
 
@@ -94,6 +94,4 @@ end
     @q.shift
   end
 
-#
 ---- footer
-
